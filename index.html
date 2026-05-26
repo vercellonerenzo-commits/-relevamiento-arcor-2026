@@ -114,7 +114,16 @@ async function enviar(){
     var qs=new URLSearchParams();
     Object.keys(payload).forEach(function(k){ qs.append(k, payload[k]===null||payload[k]===undefined?"":payload[k]); });
     var url=WEBHOOK_URL+"?"+qs.toString();
-    await fetch(url,{method:"GET",mode:"no-cors"});
+    // Usamos iframe oculto para garantizar que el GET llegue a Google Apps Script
+    await new Promise(function(resolve){
+      var fr=document.createElement("iframe");
+      fr.style.display="none";
+      fr.src=url;
+      fr.onload=function(){ document.body.removeChild(fr); resolve(); };
+      fr.onerror=function(){ document.body.removeChild(fr); resolve(); };
+      document.body.appendChild(fr);
+      setTimeout(function(){ if(fr.parentNode){document.body.removeChild(fr);} resolve(); },8000);
+    });
     st.paso=PASO.EXITO;render();
   }catch(e){
     st.error="Error de conexion. Verifica el WiFi e intenta de nuevo.";
