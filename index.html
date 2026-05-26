@@ -111,8 +111,10 @@ async function enviar(){
   TIPOS_ARCOR.forEach(function(t){payload["cant_"+t]=st.cantPorTipo[t]||0;});
   sf.forEach(function(r,i){payload["serie_"+(i+1)]=r.val;payload["tipo_serie_"+(i+1)]=r.tipo;});
   try{
-    var params=Object.keys(payload).map(function(k){return encodeURIComponent(k)+"="+encodeURIComponent(payload[k]);}).join("&");
-    await fetch(WEBHOOK_URL+"?"+params,{method:"GET",mode:"no-cors"});
+    var qs=new URLSearchParams();
+    Object.keys(payload).forEach(function(k){ qs.append(k, payload[k]===null||payload[k]===undefined?"":payload[k]); });
+    var url=WEBHOOK_URL+"?"+qs.toString();
+    await fetch(url,{method:"GET",mode:"no-cors"});
     st.paso=PASO.EXITO;render();
   }catch(e){
     st.error="Error de conexion. Verifica el WiFi e intenta de nuevo.";
